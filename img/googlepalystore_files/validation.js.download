@@ -1,0 +1,186 @@
+function isValidData(value) {
+    if($.isArray(value) || typeof value == "object")
+        return typeof value != "undefined" && value != null && value != "" ? true : false;
+    else if(typeof value == "number")
+        return typeof value != "undefined" && value != null ? true : false;
+    else if(typeof value == "boolean")
+        return true;
+    else
+        return typeof value != "undefined" && value != null && value != "" && value.trim() != "" && value.trim() != "undefined" ? true : false; 
+}
+
+function isNumericValue(value) {
+    var returnValue = false;
+    try {
+        return !isNaN(value);
+    } catch (e) {
+        console.log(e);
+    }
+    return returnValue;
+}
+
+function checkEmail(value){
+    var emailFilter = /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+.)+([a-zA-Z0-9]{2,4})+$/;
+    return emailFilter.test(value);
+}
+
+
+function isValidPhoneNumber(value){
+    var numberFilter=/^\d{10}$/;
+    return numberFilter.test(value);
+}
+
+function isValidPassword(value){
+    if(value!=""){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+function checkAddressFirstLine(value) {
+	var addressfirstline = $("#addressfirstline").val();
+	if (addressfirstline == null || addressfirstline == "" || addressfirstline == "undefined") {
+		return false;
+	} else {
+		return true;
+	}
+
+	if (addressfirstline.length > 25) {
+		return false;
+	} else {
+		return true;	
+	}
+}
+
+function landmarkAddressLine(value) {
+	var addresslandmarkline = $("#addresslandmarkline").val();
+	if (addresslandmarkline == null || addresslandmarkline == "" || addresslandmarkline == "undefined") {
+		return false;
+	} else {
+		return true;
+	}
+
+	if (addresslandmarkline.length > 20) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function addressTagLine(value) {
+	var addressTag = $("#addressTag").val();
+	if (addressTag == null || addressTag == "" || addressTag == "undefined") {
+		return false;
+	} else {
+		return true;	
+	}
+
+	if (addressTag.length > 50) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+
+// function checkaddress(value) {
+// 	var ret = "true";
+// 	name - 20 chars
+// 	Firstline - 25 chars
+// 	second line - 50 chars
+// 	landmark - 20 chars
+// 	city - non editable
+// 	pincode - only numeric 6 digits
+// 	var aaddressusername = document.getElementById("addressusername").value;
+// 	var addressfirstline = document.getElementById("addressfirstline").value;
+// 	var addresssecondline = document.getElementById("addresssecondline").value;
+// 	var addresslandmarkline = document.getElementById("addresslandmarkline").value;
+// 	var addresspincode = document.getElementById("addresspincode").value;
+// 	var addresscellnumber = document.getElementById("addresscellnumber").value;
+
+// 	if (aaddressusername == null || aaddressusername == "" || aaddressusername == "undefined") {
+// 		ret = "Name Field can not be Empty~addressusername"; // we need to pass the is also against which the error will be printed
+// 		return ret;
+// 	}
+
+// 	if (aaddressusername.length > 25) {
+// 		ret = "Name can not be greater than 25 chars~addressusername"; // we need to pass the is also against which the error will be printed
+// 		return ret;
+// 	}
+
+// 	if (addressfirstline == null || addressfirstline == "" || addressfirstline == "undefined") {
+// 		// ret = "This filed is mandatory~addressfirstline";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;
+// 	}
+
+// 	if (addressfirstline.length > 25) {
+// 		// ret = "This filed can not be more than 20 characters~addressfirstline";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;	
+// 	}
+
+// 	if (addresssecondline == null || addresssecondline == "" || addresssecondline == "undefined") {
+// 		// ret = "This filed is mandatory~addresssecondline";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;	
+// 	}
+
+// 	if (addresssecondline.length > 50) {
+// 		// ret = "This filed can not be more than 50 characters~addresssecondline";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;
+// 	}
+
+// 	if (addresslandmarkline == null || addresslandmarkline == "" || addresslandmarkline == "undefined") {
+// 		// ret = "This filed is mandatory~addresslandmarkline";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;
+// 	}
+
+// 	if (addresslandmarkline.length > 20) {
+// 		// ret = "This filed can not be more than 20 characters~addresslandmarkline";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;
+// 	}
+
+// 	if (addresscellnumber == null || addresscellnumber == "" || addresscellnumber == "undefined") {
+// 		// ret = "Cellnumber is mandatory~addresscellnumber";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;
+// 	}
+
+// 	if (addresscellnumber.length != 10) {
+// 		// ret = "Cell number will be 10 digits only~addresscellnumber";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;
+// 	}
+
+// 	if (isNaN(addresscellnumber)) {
+// 		// ret = "Cellnumber must always be a number.~addresscellnumber";
+// 		// return ret;
+// 		return false;
+// 	} else {
+// 		return true;
+// 	}
+
+// 	return ret;
+
+// }

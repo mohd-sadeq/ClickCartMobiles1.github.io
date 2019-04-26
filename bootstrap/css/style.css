@@ -1,0 +1,19 @@
+/* Your custom styles */
+.carousel .carousel-indicators li {
+    max-width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.textInput {
+    height: 28px;
+    margin-bottom: 10px;
+    border: 1px solid #6B7363;
+    font-size: 1.2em;
+    padding: 5px;
+    width: 95%;
+    border-radius: 10px;
+}
+.textInput:focus {
+    outline: none;
+}

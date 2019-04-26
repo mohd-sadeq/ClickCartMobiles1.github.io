@@ -1,0 +1,413 @@
+var webAPIUrl = "https://webapi.zappfresh.com/zappfresh";
+if(window.location.hostname != "www.zappfresh.com") {
+	webAPIUrl = "https://test.zappfresh.com/zappfresh";
+} else {
+	webAPIUrl = "https://webapi.zappfresh.com/zappfresh";
+}
+
+var noOfDaysToTakeOrders = 4;
+var monthObj = ["January","February","March","April","May","June","July","August","September","October","November","December"]; 
+	//["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+var customerCareNo = "9015622366";
+var categoryArray = [
+   {  
+      "catid":"5",
+      "catname":"Chicken",
+      "active":true,
+      "catimage":"",
+      "expcatimage":"",
+      "expcathref":"chicken",
+      "expcathref_class":"ourProd op_chicken",
+      "cathref":"/"+"chicken",
+      "cathref_class":"chicken",
+      "products":"53 Products",
+      "icon_class":"",
+      "isNew" : false
+   },
+   {  
+      "catid":"4",
+      "catname":"Mutton",
+      "active":true,
+      "catimage":"",
+      "expcatimage":"",
+      "expcathref":"mutton",
+      "expcathref_class":"ourProd op_mutton",
+      "cathref":"/"+"mutton",
+      "cathref_class":"mutton",
+      "products":"11 Products",
+      "icon_class":"",
+      "isNew" : false
+   },
+   {  
+      "catid":"7",
+      "catname":"Sea Food",
+      "active":true,
+      "catimage":"",
+      "expcatimage":"",
+      "expcathref":"seafoods",
+      "expcathref_class":"ourProd op_sea",
+      "cathref":"/"+"seafoods",
+      "cathref_class":"seafood",
+      "products":"23 Products",
+      "icon_class":"",
+      "isNew" : false
+   },
+   {  
+      "catid":"9",
+      "catname":"Ready To Cook",
+      "active":true,
+      "catimage":"",
+      "expcatimage":"",
+      "expcathref":"marinated",
+      "expcathref_class":"ourProd op_marinades",
+      "cathref":"/"+"marinated",
+      "cathref_class":"marinated",
+      "products":"7 Products",
+      "icon_class":"",
+      "isNew" : false
+   },
+   {  
+      "catid":"3",
+      "catname":"Ready To Eat",
+      "active":true,
+      "catimage":"",
+      "expcatimage":"",
+      "expcathref":"precooked",
+      "expcathref_class":"ourProd op_pre",
+      "cathref":"/"+"precooked",
+      "cathref_class":"pre",
+      "products":"21 Products",
+      "icon_class":"",
+      "isNew" : false
+   },
+   {  
+      "catid":"2",
+      "catname":"Cold Cuts",
+      "active":true,
+      "catimage":"",
+      "expcatimage":"",
+      "expcathref":"coldcuts",
+      "expcathref_class":"ourProd op_cold",
+      "cathref":"/"+"coldcuts",
+      "cathref_class":"coldcuts",
+      "products":"8 Products",
+      "icon_class":"",
+      "isNew" : false
+   }
+];
+
+var homepageTopBannerArray = [
+    
+   {  
+      "bannerimage":"images/banner/banner_35.jpg",
+      "href":"",
+      "ahref":""
+   },
+   {  
+      "bannerimage":"images/banner/banner_30.jpg",
+      "href":"",
+      "ahref":""
+   },
+   {  
+      "bannerimage":"images/banner/banner_29.jpg",
+      "href":"#freshDeals",
+      "ahref":""
+   },
+   {  
+      "bannerimage":"images/banner/banner_31.gif",
+      "href":"",
+      "ahref":""
+   }
+];
+
+var timeslotMap = {
+	25 : { 
+            "slottext" : "Immediate Now", 
+            "active" : false 
+         },
+         
+	33 : {
+            "slottext" : "9 AM TO 12 PM",
+            "cutOffTimeHour" : 8,
+            "cutOffTimeMin" : 30,
+            "active" : false 
+         },
+	34 : {
+            "slottext" : "12 PM TO 3 PM",
+            "cutOffTimeHour" : 11,
+            "cutOffTimeMin" : 30, 
+            "active" : false 
+         },
+	35 : {
+            "slottext" : "3 PM TO 6 PM",
+            "cutOffTimeHour" : 14,
+            "cutOffTimeMin" : 30,
+            "active" : false 
+         },
+	36 : {
+            "slottext" : "6 PM TO 10 PM",
+            "cutOffTimeHour" : 18,
+            "cutOffTimeMin" : 30,
+            "active" : false 
+         },
+   37 : {
+            "slottext" : "8 AM TO 10 AM",
+            "cutOffTimeHour" : 7,
+            "cutOffTimeMin" : 30,
+            "active" : true 
+         },
+    38 : {
+            "slottext" : "10 AM TO 1 PM",
+            "cutOffTimeHour" : 9,
+            "cutOffTimeMin" : 30, 
+            "active" : true 
+         },
+    39 : {
+            "slottext" : "2 PM TO 5 PM",
+            "cutOffTimeHour" : 13,
+            "cutOffTimeMin" : 30,
+            "active" : true 
+         },
+    40 : {
+            "slottext" : "5 PM TO 8 PM",
+            "cutOffTimeHour" : 16,
+            "cutOffTimeMin" : 30,
+            "active" : true 
+         },
+    41 : {
+            "slottext" : "8 PM TO 10 PM",
+            "cutOffTimeHour" : 19,
+            "cutOffTimeMin" : 30,
+            "active" : true 
+         }
+};
+
+var disableSlotMap = {
+	//"2018-09-06": [33, 36],
+	"2018-09-07": [33],
+	"2018-09-08": [36],
+	"2018-09-09": [35, 36]
+}
+
+var categoryId = {
+   5 : "chicken",
+   4 : "mutton" ,
+   7 : "seafoods" ,
+   3 : "precooked" ,
+   2 : "coldcuts", 
+   9 : "marinated" ,
+   10 : "cooked seekh kebab" ,
+   1 : "free range chicken" ,
+   6 : "pork" ,
+   8 : "white label" 
+};
+
+var currentCategoryId = {
+   "chicken" : 5,
+   "mutton" : 4,
+   "seafoods" : 7,
+   "precooked" : 3,
+   "coldcuts" : 2, 
+   "marinated" : 9,
+   "cooked seekh kebab" : 10,
+   "free range chicken" : 1,
+   "pork"  : 6,
+   "white label" : 8
+};
+
+var orderStateMapping = {
+   4 : "placed",
+   5 : "assigned",
+   6 : "dispatched",
+   7 : "cancel",
+   10 : "Delivered"
+};
+
+var RecipesArray = {
+	"chicken": [
+		{
+			"recipyImage": "/images/recipe/Chicken-Breast-with-Herb-Sauce.jpg",
+			"recipyName": "Chicken Breast with Herb Sauce",
+			"recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-breast-with-herb-sauce/",
+		},{
+			"recipyImage": "/images/recipe/chicken_fry.jpg",
+			"recipyName": "Chicken Fry",
+			"recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-fry/",
+		},{
+         "recipyImage": "/images/recipe/Mutton-Keema.jpg",
+         "recipyName": "Mutton Keema",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-keema/",
+      },{
+         "recipyImage": "/images/recipe/Mutton-Liver.jpg",
+         "recipyName": "Mutton Liver",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-liver-fry/",
+      },{
+         "recipyImage": "/images/recipe/Broiled-salmon.jpg",
+         "recipyName": "Broiled Salmon",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/broiled-salmon-healthy-weight-loss-recipe/",
+      },{
+         "recipyImage": "/images/recipe/Singhara-Fish-Fillets.jpg",
+         "recipyName": "Singhara Fish Fillets",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/singhara-fish-fillets/",
+      },
+	],
+	"mutton":  [
+		    {
+         "recipyImage": "/images/recipe/Chicken-Breast-with-Herb-Sauce.jpg",
+         "recipyName": "Chicken Breast with Herb Sauce",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-breast-with-herb-sauce/"
+      },{
+         "recipyImage": "/images/recipe/chicken_fry.jpg",
+         "recipyName": "Chicken Fry",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-fry/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Keema.jpg",
+         "recipyName": "Mutton Keema",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-keema/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Liver.jpg",
+         "recipyName": "Mutton Liver",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-liver-fry/"
+      },{
+         "recipyImage": "/images/recipe/Broiled-salmon.jpg",
+         "recipyName": "Broiled Salmon",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/broiled-salmon-healthy-weight-loss-recipe/"
+      },{
+         "recipyImage": "/images/recipe/Singhara-Fish-Fillets.jpg",
+         "recipyName": "Singhara Fish Fillets",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/singhara-fish-fillets/"
+      },
+	],
+   "seafoods":  [
+            {
+         "recipyImage": "/images/recipe/Chicken-Breast-with-Herb-Sauce.jpg",
+         "recipyName": "Chicken Breast with Herb Sauce",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-breast-with-herb-sauce/"
+      },{
+         "recipyImage": "/images/recipe/chicken_fry.jpg",
+         "recipyName": "Chicken Fry",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-fry/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Keema.jpg",
+         "recipyName": "Mutton Keema",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-keema/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Liver.jpg",
+         "recipyName": "Mutton Liver",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-liver-fry/"
+      },{
+         "recipyImage": "/images/recipe/Broiled-salmon.jpg",
+         "recipyName": "Broiled Salmon",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/broiled-salmon-healthy-weight-loss-recipe/"
+      },{
+         "recipyImage": "/images/recipe/Singhara-Fish-Fillets.jpg",
+         "recipyName": "Singhara Fish Fillets",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/singhara-fish-fillets/"
+      },
+   ],
+   "precooked":  [
+         {
+         "recipyImage": "/images/recipe/Chicken-Breast-with-Herb-Sauce.jpg",
+         "recipyName": "Chicken Breast with Herb Sauce",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-breast-with-herb-sauce/"
+      },{
+         "recipyImage": "/images/recipe/chicken_fry.jpg",
+         "recipyName": "Chicken Fry",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-fry/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Keema.jpg",
+         "recipyName": "Mutton Keema",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-keema/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Liver.jpg",
+         "recipyName": "Mutton Liver",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-liver-fry/"
+      },{
+         "recipyImage": "/images/recipe/Broiled-salmon.jpg",
+         "recipyName": "Broiled Salmon",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/broiled-salmon-healthy-weight-loss-recipe/"
+      },{
+         "recipyImage": "/images/recipe/Singhara-Fish-Fillets.jpg",
+         "recipyName": "Singhara Fish Fillets",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/singhara-fish-fillets/"
+      },
+   ],
+   "coldcuts":  [
+            {
+         "recipyImage": "/images/recipe/Chicken-Breast-with-Herb-Sauce.jpg",
+         "recipyName": "Chicken Breast with Herb Sauce",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-breast-with-herb-sauce/"
+      },{
+         "recipyImage": "/images/recipe/chicken_fry.jpg",
+         "recipyName": "Chicken Fry",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-fry/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Keema.jpg",
+         "recipyName": "Mutton Keema",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-keema/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Liver.jpg",
+         "recipyName": "Mutton Liver",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-liver-fry/"
+      },{
+         "recipyImage": "/images/recipe/Broiled-salmon.jpg",
+         "recipyName": "Broiled Salmon",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/broiled-salmon-healthy-weight-loss-recipe/"
+      },{
+         "recipyImage": "/images/recipe/Singhara-Fish-Fillets.jpg",
+         "recipyName": "Singhara Fish Fillets",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/singhara-fish-fillets/"
+      },
+   ],
+   "marinated":  [
+            {
+         "recipyImage": "/images/recipe/Chicken-Breast-with-Herb-Sauce.jpg",
+         "recipyName": "Chicken Breast with Herb Sauce",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-breast-with-herb-sauce/"
+      },{
+         "recipyImage": "/images/recipe/chicken_fry.jpg",
+         "recipyName": "Chicken Fry",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/chicken-fry/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Keema.jpg",
+         "recipyName": "Mutton Keema",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-keema/"
+      },{
+         "recipyImage": "/images/recipe/Mutton-Liver.jpg",
+         "recipyName": "Mutton Liver",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/mutton-liver-fry/"
+      },{
+         "recipyImage": "/images/recipe/Broiled-salmon.jpg",
+         "recipyName": "Broiled Salmon",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/broiled-salmon-healthy-weight-loss-recipe/"
+      },{
+         "recipyImage": "/images/recipe/Singhara-Fish-Fillets.jpg",
+         "recipyName": "Singhara Fish Fillets",
+         "recipyLink": "https://www.zappfresh.com/blog/recipes/singhara-fish-fillets/"
+      },
+   ]  
+
+};
+
+var pgObj = {
+	"cc"  	: "Credit Cards",
+	"dc"  	: "Debit Cards",
+	"nb"  	: "Net Banking",
+	"mbk" 	: "MobiKwik",
+	"cod" 	: "COD",
+	"paytm" : "Paytm",
+	"ptm"   : "Paytm",
+	"upi"	: "UPI",
+	"sufficientbalance" : "Sufficient Balance"
+};
+
+var cityNameObj = {
+  1 : "Delhi",
+  2 : "Gurgaon",
+  3 : "Noida",
+  4 : "Ghaziabad",
+  5 : "Chandigarh",
+  6 : "Mohali",
+  7 : "Panchkula"
+};

@@ -1,0 +1,1328 @@
+var currentAreaList = "";
+$(function() {
+	handleOpenModalPopupLayers();
+	initializeModalPopupLayer();
+	initializeSigninSignupModal();
+	populateTopMenus();
+	checkLocationCookie();
+	initializeFootercatagory();
+	checkForUserData();
+	
+	$("body").on("click", "#signUpFormsubbtn", function() {
+		submitUserSignUpFormData();
+	});
+
+	$("body").on("click", "#loginNowBtn", function() {
+		submitLoginData();
+	});
+	
+	$("body").on("click", "#browseProducts", function(event) {
+		event.preventDefault();
+		window.location.href = "//" + window.location.hostname + "/chicken";
+	});
+
+	$(document).on("click",".addToCardBtnCls, .addToCardIconCls", function(event) {
+		event.preventDefault();
+		showLoader();
+		fbq('track', 'AddToCart');
+		addToCart(this, populateHeaderCart);
+	});
+	
+	$("body").on("click", ".locationBtn", function(event) {
+		event.preventDefault();
+		deleteCookie("areaId");
+		deleteCookie("cityId");
+		showLoader();
+		fetchAreaList(this);
+	});
+	
+	fetchCart(populateHeaderCart);
+	
+	$("body").on("keyup","#locationTextBox", function() {
+		populateSearchAreaList(this);
+	});
+	
+	$("body").on("click",".areaHref", function(event) {
+		event.preventDefault();
+		showLoader();
+		setAreaCookieAndUpdatePage(this);
+	});
+	
+	$("body").on("click","#checkoutBtn", function() {
+		fbq('track', 'InitiateCheckout');
+		checkOutBtnClickHandler();
+	});
+
+	$("body").on("click", "#productListTextBox", function(event) {
+		event.preventDefault();
+		populateProductCatagoryList();
+	});
+
+	$("body").on("keyup", "#productListTextBox", function() {
+		fetchProductList(this);
+	});
+
+	$("body").on("click", "#forgetPasswordBtn", function(event) {
+		event.preventDefault();
+		forgetPassword(this);
+	});
+	
+	$("body").on("click", "#resetPasswordBtn", function(event) {
+		event.preventDefault();
+		changePassword(this);
+	});
+	
+	$("body").on("click", ".dealAddToCart, .dealsAddToCartIconCls", function(event) {
+		event.preventDefault();
+		showLoader();
+		dealsAddToCart(this, populateHeaderCart);
+	});
+
+	$("body").on("click", ".dealDeleteToCart, .dealsDeleteToCartIconCls", function(event) {
+		event.preventDefault();
+		showLoader();
+		deleteDeals(this, populateHeaderCart);
+	});
+	productQtyChangeHandler();
+	hideLoader();
+
+	if ($("#customerCareNo").length > 0) {
+		$("#customerCareNo").html(customerCareNo);
+	}
+
+	$("body").on("click", "#unavlblebtn", function(event) {
+		event.preventDefault();
+		redirectToHomePage();
+	});
+});
+
+function refreshPage() { 
+	location.reload(); 
+}
+
+function checkForUserData () {
+	var userData = getCookie("userData");
+	if(isValidData(userData)) {
+		var userDataParsed = JSON.parse(userData);
+		if(isValidData(userDataParsed)) {
+			var userEmail = userDataParsed.data.email;
+			var memberBalance = getCookie("memberBalance");
+			parseFloat(memberBalance).toFixed(2);
+			$("#showEmail").html(userDataParsed.data.email).addClass("show").removeClass("noshow");
+			$("#showBalance").html(memberBalance).addClass("showInline").removeClass("noshow");
+		} else {
+			if (typeof authUserNotLoggedInCallbackMethod === "function") {
+				authUserNotLoggedInCallbackMethod();	
+			}
+		}
+	} else {
+		if (typeof authUserNotLoggedInCallbackMethod === "function") {
+			authUserNotLoggedInCallbackMethod();	
+		}
+	}
+}
+
+function productQtyChangeHandler() {
+	$("body").on("click", ".addToCartCotnr", function(event) {
+		event.preventDefault();
+		var productId = $(this).data("productid");
+		var itemQty = parseInt($(".qty"+productId).html());
+		itemQty = itemQty + 1;
+		showProductQuantityAdjustIcons(productId, itemQty);
+		showToast("Product has been added to cart successfully","success");
+	});
+	
+	$("body").on("click", ".add", function(event) {
+		event.preventDefault();
+		var productId = $(this).data("productid");
+		var itemQty = parseInt($(".qty"+productId).html());
+		itemQty = itemQty + 1;
+		$("#qty"+productId).html(itemQty).addClass("showInline");
+		showToast("Product has been added to cart successfully","success");
+	});
+
+	$("body").on("click", ".sub", function(event) {
+		event.preventDefault();
+		var productId = $(this).data("productid");
+		var itemQty = parseInt($(".qty"+productId).html());
+		itemQty = itemQty - 1;
+		updateItemQuantity(productId, itemQty);
+		if (itemQty <= 0) {
+			hideProductQuantityAdjustIcons(productId, itemQty);
+		}
+		showToast("Product has been removed from cart successfully","failure");
+	});
+}
+
+function showProductQuantityAdjustIcons(productId, quantity) {
+	var intervalref = setInterval(function(){
+		if($("#addToCardBtn"+productId).length > 0) {
+			updateItemQuantity(productId, quantity);
+			$(".addToCardBtn"+productId).removeClass("show").addClass("noshow");
+			$(".quantityUpdateIconContainer"+productId).removeClass("noshow").addClass("showInline");
+			clearInterval(intervalref);
+		}
+	}, 100);
+}
+
+function hideProductQuantityAdjustIcons(productId, quantity) {
+	$(".addToCardBtn"+productId).removeClass("noshow").addClass("show");
+	$(".quantityUpdateIconContainer"+productId).removeClass("showInline").addClass("noshow");
+}
+
+function updateItemQuantity(productId, quantity) {
+	$(".qty"+productId).html(quantity).addClass("showInline");
+}
+
+function revertCartIconQuantityChanges(productMap) {
+	$.each(productMap, function(productId, productTempName) {
+		if($("#quantityUpdateIconContainer"+productId).hasClass("showInline")) {
+			$(".quantityUpdateIconContainer"+productId).addClass("noshow").removeClass("showInline");
+			$(".addToCardBtn"+productId).addClass("show").removeClass("noshow");
+		}
+	});
+}
+
+function initializeModalPopupLayer() {
+	$("body").on("click", ".modalPopupLayerParent", function(event) {
+		event.preventDefault();
+		$(".form-input").val("");
+		$("#responseLoginMsgError").removeClass("show").addClass("noshow");
+		$("#responseSignUpMsgError").removeClass("show").addClass("noshow");
+		$("#responseForgetPassMsgError").removeClass("show").addClass("noshow");
+		$("#responseRecoverPassMsgError").removeClass("show").addClass("noshow");
+		
+		//ticketquery error
+		$("#ticketQueryError").removeClass("show").addClass("noshow");
+		$("#responseTrackTcktError").removeClass("show").addClass("noshow");
+		
+		//raise ticket close
+		$(".raiseTicket").removeClass("noshow").addClass("show");
+		$(".ticketRaised").removeClass("show").addClass("noshow");
+
+		//sign in modal close
+		$("#signUpModalContr").removeClass("show").addClass("noshow");
+		$("#signInModalContr").removeClass("noshow").addClass("show");
+		$("#forgotPasswordModalContr").removeClass("show").addClass("noshow");
+		$("#recoverPasswordModalContr").removeClass("show").addClass("noshow");
+
+		var targetId = $(this).data("target");
+		var showoverlay = $(this).data("showoverlay");
+		if ($("#" + targetId).hasClass("noshow")) {
+			$(".modalPopupLayerChildren").addClass("noshow");
+			$("#" + targetId).removeClass("noshow").addClass("show");
+			if (showoverlay || showoverlay == "true")
+				$("#modal-overlay-id").addClass("show").removeClass("noshow");
+		} else {
+			if(targetId == "locationPopUp") {
+				$("#areaListContainer").removeClass("show").addClass("noshow");
+				if(!isLocationCookieValid()) {
+					showLocationMandatoryError();
+					return false;
+				} else {
+					removeLocationMandatoryError();
+				}
+			}
+			
+			$("#" + targetId).removeClass("show").addClass("noshow");
+			$("#modal-overlay-id").addClass("noshow").removeClass("show");
+		}
+		
+		checkDealsTermsAndConditions(this);
+		event.stopPropagation();
+	});
+}
+
+function checkDealsTermsAndConditions(that) {
+	var containerId = $(that).attr("id");
+	if(containerId == "dealsCntnr") {
+		var dealId = $(that).data("dealsid");
+		var dealsTermsAndCondition = dealsTnCObj[dealId];
+		var dealsTermsAndConditionArray = dealsTermsAndCondition.split("|");
+		$("#dealsTermsAndCond").children().remove();
+		$.each(dealsTermsAndConditionArray, function(dealsArrayIndex, dealsTnCText) {
+			$("#dealsTermsAndCond").append("<li>"+dealsTnCText+"</li>");
+		});
+	}
+}
+
+function handleOpenModalPopupLayers() {
+	$(document).click(function(event) {
+		if (!$(event.target).closest(".modalPopupLayerChildren").length) {
+			if ($("#locationPopUp").hasClass("show")) {
+				if(!isLocationCookieValid()) {
+					showLocationMandatoryError();
+					return false;
+				} else {
+					removeLocationMandatoryError();
+				}
+			}
+			
+			if(!$(".lds-roller").hasClass("noshow")) {
+				return false;
+			}
+			
+			$("body").find(".modalPopupLayerChildren, #modal-overlay-id").removeClass("show").addClass("noshow");
+		}
+	});
+
+	$(document).keyup(function(e) {
+		if (e.keyCode == 27) {
+			var domELementArrWithModalTarget = $(".modalPopupLayerParent");
+			$.each(domELementArrWithModalTarget, function(index, modalDomElement) {
+				var currentDomElementTarget = $(this).data("target");
+				if ($("#" + currentDomElementTarget).hasClass("show")) {
+					if(currentDomElementTarget == "locationPopUp") {
+						if(!isLocationCookieValid()) {
+							showLocationMandatoryError();
+							return false;
+						} else {
+							removeLocationMandatoryError();
+						}
+					}
+					
+					if(!$(".lds-roller").hasClass("noshow")) {
+						return false;
+					}
+					
+					$("#" + currentDomElementTarget + ", #modal-overlay-id").removeClass("show").addClass("noshow");
+				}
+			});
+		}
+	});
+}
+
+function showLocationMandatoryError() {
+	$("#locationError").html("Location selection is mandatory to proceed further.");
+}
+
+function removeLocationMandatoryError() {
+	$("#locationError").html("");
+}
+
+function initializeSigninSignupModal() {
+	$("body").on("click", "#showLogin, #showLoginF", function(event) {
+		event.preventDefault();
+		$(".form-input").val("");
+		$("#responseLoginMsgError").removeClass("show").addClass("noshow");
+		$("#signUpModalContr").removeClass("show").addClass("noshow");
+		$("#signInModalContr").removeClass("noshow").addClass("show");
+		$("#forgotPasswordModalContr").removeClass("show").addClass("noshow");
+		$("#recoverPasswordModalContr").removeClass("show").addClass("noshow");
+		
+	});
+
+	$("body").on("click", "#showSignup", function(event) {
+		event.preventDefault();
+		$(".form-input").val("");
+		$("#responseSignUpMsgError").removeClass("show").addClass("noshow");
+		$("#signInModalContr").removeClass("show").addClass("noshow");
+		$("#signUpModalContr").removeClass("noshow").addClass("show");
+		$("#forgotPasswordModalContr").removeClass("show").addClass("noshow");
+	});
+	
+	$("body").on("click", "#showForgotPassword", function(event) {
+		event.preventDefault();
+		$(".form-input").val("");
+		$("#responseForgetPassMsgError").removeClass("show").addClass("noshow");
+		$("#responseRecoverPassMsgError").removeClass("show").addClass("noshow");
+		$("#forgotPasswordModalContr").removeClass("noshow").addClass("show");
+		$("#signInModalContr").removeClass("show").addClass("noshow");
+		$("#signUpModalContr").removeClass("show").addClass("noshow");
+	});
+}
+
+function populateTopMenus() {
+	var intervalref = setInterval(function(){ 
+		if($("#categorytop").length > 0) {
+			for(i = 0; i < categoryArray.length; i++) {
+				$("#categorytop").append('<li><a href="' + categoryArray[i].cathref + '" class="' + categoryArray[i].cathref_class + '"><i></i><span>' + categoryArray[i].catname + '</span>'+ (categoryArray[i].isNew ? "<em>New</em>" : "") +'</a></li>');
+			}
+			clearInterval(intervalref);
+		}
+	}, 100);
+}
+
+function populateExploreCategory() {
+	for(i = categoryArray.length-1; i >= 0; i--) {
+		$("#explorecat").prepend('<a href="' + categoryArray[i].expcathref + '" class="' + categoryArray[i].expcathref_class + '"><div class="bgOvrly"></div><p><strong>' + categoryArray[i].catname + '</strong><span>' + categoryArray[i].products + '</span></p></a>');
+	}
+}
+
+function initializeHomepageBanner() {
+	$.each(homepageTopBannerArray, function(homepageTopBannerArrayIndex, homepageTopBannerArrayObject) {
+		$("#homepagebanner").append('<div><a href="' + homepageTopBannerArrayObject.href + '"><img src="' + homepageTopBannerArrayObject.bannerimage + '"></a></div>');
+	});
+
+	$(".lazy").slick({
+		lazyLoad : 'ondemand', // ondemand progressive anticipated
+		infinite : true,
+		autoplay : true,
+		autoplaySpeed : 3000
+	});
+}
+
+function ajaxCall(url, type, data, successCallback, errorCallback, completeCallback, additionalParams) {
+	$.ajax({
+		url : url+"?uniqueRefId="+Math.random(),
+		method : type,
+		data : JSON.stringify(data),
+		cache : false,
+		success : function(response) {
+			if (typeof successCallback === "function") {
+				callBackparam = isValidData(additionalParams.successCallback) ? additionalParams.successCallback : null;
+				successCallback(response, callBackparam);
+			}
+		},
+		error : function(error) {
+			if (typeof errorCallback === "function") {
+				callBackparam = isValidData(additionalParams.errorCallback) ? additionalParams.errorCallback : null;
+				errorCallback(error, callBackparam);
+			}
+		},
+		complete : function() {
+			if (typeof completeCallback === "function") {
+				callBackparam = isValidData(additionalParams.completeCallback) ? additionalParams.completeCallback : null;
+				completeCallback(callBackparam);
+			}
+		}
+	});
+}
+
+function setCookie(cname, cvalue, exdays) {
+	var d = new Date();
+	d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+	var expires = "expires=" + d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+	var name = cname + "=";
+	var ca = document.cookie.split(";");
+	for (var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == " ") {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return "";
+}
+
+function deleteCookie(name) {
+	document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+}
+
+function getUserToken() {
+	return getCookie("userToken");
+}
+
+function checkUserLoggedIn() {
+	var userToken = getUserToken();
+	if (!isValidData(userToken)) {
+		signout();
+	}
+}
+
+function signout() {
+	deleteCookie("userToken");
+	deleteCookie("memberBalance");
+	deleteCookie("profilePic");
+	deleteCookie("userId");
+	deleteCookie("userData");
+	webengage.user.logout();
+	window.location.href = "//" + window.location.hostname;
+}
+
+function submitUserSignUpFormData() {
+	var validateDataValue = validateUserSignUpFormData();
+	if (validateDataValue) {
+		var userName = $("#signUpemailId").val();
+		var contactNo = $("#signUpMobNo").val();
+		var password = $("#signUpPassword").val();
+		var validatedData = {
+			"username" : userName,
+			"password" : password,
+			"contactno" : contactNo
+		};
+		showLoader();
+		ajaxCall(webAPIUrl + "/user/signup", "POST", validatedData, submitDataSuccessCallback, " ", " ", " ");
+
+	}
+}
+
+function submitDataSuccessCallback(response) {
+	if (response.success) {
+		fbq('track', 'CompleteRegistration');
+		var	responseData = response.data;
+		var createdate = responseData.data.createdat;
+		var cellnumber = responseData.data.cellnumber;
+		var email = responseData.data.email;
+		
+		
+		webengage.user.login(email); //9SBOkLVMWvPX is the unique user identifier being used here 
+		webengage.user.setAttribute('we_email', email);
+
+		webengage.user.setAttribute('we_phone', cellnumber);
+		webengage.user.setAttribute("Registered On", createdate);
+
+		setCookieAfterSignUP(response.data);
+		userLoggedAfterOperations(response);
+		$("#loginUserActionText").trigger("click");
+		if (typeof showAccordian === "function") {
+			showAccordian(2);	
+		}
+		// showToast(response.message,"success");
+	} else {
+		$("#responseSignUpMsgError").html(response.message).removeClass("noshow").addClass("show");
+	}
+	hideLoader();
+}
+
+function setCookieAfterSignUP(responseData) {
+	if(isValidData(responseData)) {
+		var userToken = responseData.webtoken.token;
+		var memberBalance = responseData.memberbalance;
+		var profilePic = responseData.profilepic;
+		var userId = responseData.data.userid;
+		
+		setCookie("userToken", userToken, 5);
+		setCookie("memberBalance", memberBalance, 5);
+		setCookie("profilePic", profilePic, 5);
+		setCookie("userId", userId, 5);
+		setCookie("userData", JSON.stringify(responseData), 5);
+	}
+}
+
+
+function validateUserSignUpFormData() {
+	var emailId = $("#signUpemailId").val();
+	if (!checkEmail(emailId)) {
+		$("#signUpEmailError").html("Please enter valid email id.").addClass("show").removeClass("noshow");
+		return false;
+	} else {
+		$("#signUpEmailError").html("").addClass("noshow").removeClass("show");
+	}
+
+	var mobileNo = $("#signUpMobNo").val();
+	if (!isValidPhoneNumber(mobileNo)) {
+		$("#signUpMobNoError").html("Please enter valid mobile number").addClass("show").removeClass("noshow");
+		return false;
+	} else {
+		$("#signUpMobNoError").html("").addClass("noshow").removeClass("show");
+	}
+
+	var signUpPassword = $("#signUpPassword").val();
+	if (!isValidPassword(signUpPassword)) {
+		$("#signUpPasswordError").html("Please enter valid password").addClass("show").removeClass("noshow");
+		return false;
+	} else {
+		$("#signUpPasswordError").html("").addClass("noshow").removeClass("show");
+	}
+
+	return true;
+}
+
+function submitLoginData() {
+	var validateDataValue = validateLoginData();
+	if (validateDataValue) {
+		var loginUser = $("#loginEmailId").val();
+		var loginPass = $("#loginPassword").val();
+		var validatedData = {
+			"username" : loginUser,
+			"password" : loginPass
+		};
+		webengage.user.login(loginUser); //9SBOkLVMWvPX is the unique user identifier being used here 
+		webengage.user.setAttribute('we_email', loginUser);
+
+		showLoader();
+		ajaxCall(webAPIUrl + "/user/signin", "POST", validatedData, loginSuccessCallback, loginErrorCallback, "", "");
+	}
+}
+
+function validateLoginData() {
+	var emailPhone = $("#loginEmailId").val();
+	if (!checkEmail(emailPhone)) {
+		$("#signInEmailError").html("Please enter valid email id.").addClass("show").removeClass("noshow");
+		return false;
+	} else {
+		$("#signInEmailError").html("").addClass("noshow").removeClass("show");
+	}
+
+	var loginPassword = $("#loginPassword").val();
+	if (!isValidPassword(loginPassword)) {
+		$("#signInPasswordError").html("Please enter valid password.").addClass("show").removeClass("noshow");
+		return false;
+	} else {
+		$("#signInPasswordError").html("").addClass("noshow").removeClass("show");
+	}
+
+	return true;
+}
+
+function loginSuccessCallback(response) {
+	if (response.success) {
+		var responseData = response.data;
+		var cellnumber = responseData.data.cellnumber;
+		var createdate = responseData.data.createdat;
+		webengage.user.setAttribute("Registered On", createdate);
+		webengage.user.setAttribute('we_phone', cellnumber);
+		// if (isValidData(responseData.data.address)){
+		// 	var name = responseData.data.address.Office.name;
+		// 	webengage.user.setAttribute('we_first_name', name);
+		// }
+		
+		
+		setCookieAfterLogin(response.data);
+		userLoggedAfterOperations(response);
+		// showToast(response.message, "success");
+		$("#loginUserActionText").trigger("click");
+		if (typeof showAccordian === "function") {
+			showAccordian(2);	
+		}
+		if (typeof showUserAddressList === "function") {
+			showUserAddressList();	
+		}
+		if (typeof showLoginIndermediateScreen === "function") {
+			showLoginIndermediateScreen();
+		}
+		
+		if($("#summaryCartList").length > 0) {
+			fetchCartSummary(populateCheckoutPageCart);
+		}
+	} else {
+		$("#responseLoginMsgError").html(response.message).removeClass("noshow").addClass("show");
+		//showToast(response.message, "failure");
+	}
+	hideLoader();
+}
+
+function setCookieAfterLogin(responseData) {
+	if(isValidData(responseData)) {
+		var userToken = responseData.webtoken.token;
+		var memberBalance = responseData.memberbalance;
+		var profilePic = responseData.profilepic;
+		var userId = responseData.data.userid;
+		
+		setCookie("userToken", userToken, 5);
+		setCookie("memberBalance", memberBalance, 5);
+		setCookie("profilePic", profilePic, 5);
+		setCookie("userId", userId, 5);
+		setCookie("userData", JSON.stringify(responseData), 5);
+		if($("#showBalance").length > 0)
+			$("#showBalance").html(memberBalance);
+	}
+}
+
+function userLoggedAfterOperations(response) {
+	$("#loginUserActionText").addClass("noshow").removeClass("show");
+	$("#myAccountActionText").addClass("showInline").removeClass("noshow");
+	if(isValidData(response))
+		setCookieAfterLogin(response.data);
+	
+	//The below code is commentted so that if in future the redirection need then we need to uncomment that.
+	//window.location.href = "//" + window.location.hostname+"/dashboard.html";
+}
+
+function loginErrorCallback(error) {
+}
+
+function checkUserAlreadyLoggedIn(checkUserLoginSuccessCallback, userNotLoggedIn) {
+	checkUserToken(checkUserLoginSuccessCallback, userNotLoggedIn);
+}
+
+function userNotLoggedIn() {
+	//Clear all the set cookies.
+	deleteCookie("userToken");
+	deleteCookie("memberBalance");
+	deleteCookie("profilePic");
+	deleteCookie("userId");
+	deleteCookie("userData");
+
+	//Then remove the effect of userLoggedAfterOperations
+	//The below code work only for the pages where we have the header in common.
+	$("#loginUserActionText").addClass("showInline").removeClass("noshow");
+	$("#myAccountActionText").addClass("noshow").removeClass("show");
+}
+
+function checkUserToken(sucessCallbackMethod, userNotLoggedIn) {
+	var userToken = getCookie("userToken");
+	var checkUserRequestParam = {
+		"token":userToken
+	};
+	
+	var additionalParam = {
+		"successCallback" : {
+			"notLoggedInCallbackMethod": userNotLoggedIn 
+		}
+	}
+
+	ajaxCall(webAPIUrl + "/user/check", "POST", checkUserRequestParam, sucessCallbackMethod,"", "", additionalParam);
+}
+
+function checkUserLoginSuccessCallback(response, additionalParam) {
+	if(response.success) {
+		userLoggedAfterOperations(response);
+	} else {
+		// alert(response.message);
+		if (typeof notLoggedInCallbackMethod === "function") {
+			additionalParam.successCallback.notLoggedInCallbackMethod();
+		}
+			}
+}
+
+function loginMandatorySucessCallbackMethod(response) {
+	if(response.success) {
+		userLoggedAfterOperations(response);
+	} else {
+		//alert(response.message);
+		userNotLoggedIn();
+	}
+}
+
+function addToCart(that, successCallbackMethod) {
+	var productId = $(that).data("productid");
+	var quantity = $(that).data("quantity");
+	var cartId = isValidData(getCookie("cartId")) ? getCookie("cartId") : "";
+	var userToken = isValidData(getCookie("userToken")) ? getCookie("userToken") : "";
+	
+	var addToCartRequestParam = {
+		"areaid": getAreaId(),
+		"cityid": getCityId(),
+		"productid":productId+"",
+		"quantity":quantity+"",
+		"cartid":cartId,
+		"token":userToken
+	};
+	
+	ajaxCall(webAPIUrl + "/cart/add", "POST", addToCartRequestParam, successCallbackMethod,"", "", "");
+}
+
+function dealsAddToCart(that, successCallbackMethod) {
+	var dealId = $(that).data("dealsid");
+	var quantity = $(that).data("quantity");
+	var cartId = isValidData(getCookie("cartId")) ? getCookie("cartId") : "";
+	var userToken = isValidData(getCookie("userToken")) ? getCookie("userToken") : "";
+	
+	var addToCartRequestParam = {
+		"areaid": getAreaId(),
+		"cityid": getCityId(),
+		"token": userToken,
+		"quantity": quantity+"",
+		"dealid": dealId+"",
+		"cartid": cartId
+	};
+	
+	ajaxCall(webAPIUrl + "/deals/add", "POST", addToCartRequestParam, successCallbackMethod,"", "", "");
+}
+
+function deleteDeals(that, successCallbackMethod) {
+	var cityId = getCityId();
+	var areaId = getAreaId();
+	var dealId = $(that).data("dealsid");
+	var quantity = $(that).data("quantity");
+	var cartId = isValidData(getCookie("cartId")) ? getCookie("cartId") : "";
+	var userToken = isValidData(getCookie("userToken")) ? getCookie("userToken") : "";
+
+	var deleteDealsRequestParam = {
+			"areaid" : areaId,
+			"cityid" : cityId,
+			"quantity": quantity+"",
+			"dealid": dealId+"",
+			"cartid" : cartId,
+			"token" : userToken
+		};
+					
+		ajaxCall(webAPIUrl + "/deals/delete", "POST", deleteDealsRequestParam, successCallbackMethod, "", "", "");
+		
+}
+
+
+function populateHeaderCart(response) {
+	//Now we need the complete set of products which are in the cart.
+	var cartItemsIconsContainer = $(".quantityCotnr");
+	var cartProductListObj = {};
+	$.each(cartItemsIconsContainer, function(cartItemArrayIndex, cartItemRefContainer) {
+		var productId = $(this).data("productid");
+		if(isValidData(productId)) {
+			cartProductListObj[productId] = "product"+productId;
+		}
+	});
+	var productidCode = "";
+	var retailPrice = "";
+	var discount = "";
+	var price = "";
+	var productName = "";
+	var categoryName = "";
+	var purchasequantity = "";
+	var imageUrl = "";
+	
+	if(response.success) {
+		
+		if(isValidData(response.data) 
+				&& isValidData(response.data.cartid)
+				&& isValidData(response.data.cartitems)) {
+			var cartItemsList = response.data.cartitems;
+			var itemCount = 0;
+			var cartId = response.data.cartid;
+			$("#addedCartItemsList").children().remove();
+			$.each(cartItemsList, function(productId, cartProductDetailsObj) {
+
+				var productid = cartProductDetailsObj.productid;
+				var totalPrice = response.data.netprice;				
+				// retailPrice = cartProductDetailsObj.price;
+				// discount = cartProductDetailsObj.alldiscount;
+				// price = cartProductDetailsObj.compareprice;
+				// productName = cartProductDetailsObj.name;
+				// categoryName = categoryId[cartProductDetailsObj.catagory];
+				// purchasequantity = cartProductDetailsObj.purchasequantity;
+
+				if (productId.length > 1) {
+					productidCode = cartProductDetailsObj.productid + " | " + productidCode ;
+					productName = cartProductDetailsObj.name + " | " + productName;
+					retailPrice = parseInt(cartProductDetailsObj.price) + " | " + retailPrice;
+					discount = parseInt(cartProductDetailsObj.alldiscount) + " | " + discount;
+					price = parseInt(cartProductDetailsObj.compareprice) + " | " + price;
+					purchasequantity = parseInt(cartProductDetailsObj.purchasequantity) + " | " + purchasequantity;
+					categoryName = categoryId[cartProductDetailsObj.catagory] + " | " + categoryName;
+					imageUrl = "https://www.zappfresh.com/images/productimages/"+productid+".jpg" + " | " + imageUrl;
+					productId.length --;
+
+				} else {
+					productidCode = cartProductDetailsObj.productid;
+					productName = cartProductDetailsObj.name;
+					retailPrice = parseInt(cartProductDetailsObj.price);
+					discount = parseInt(cartProductDetailsObj.alldiscount);
+					price = parseInt(cartProductDetailsObj.compareprice);
+					purchasequantity = parseInt(cartProductDetailsObj.purchasequantity);
+					categoryName = categoryId[cartProductDetailsObj.catagory];
+					imageUrl = "https://www.zappfresh.com/images/productimages/"+productid+".jpg";
+				}
+
+				webengage.track("Added To Cart", {
+					"Product ID" : productidCode,
+					"Retail Price" : retailPrice,
+					"Discount" : discount,
+ 					"Price" : price,
+					"Quantity"   : purchasequantity,
+
+					/* Strings */
+					"Product"    : productName,
+					"Category"   : categoryName,
+					"Currency"   : "INR",
+					"Big Image URL"	: imageUrl,
+
+				});
+
+				var productIdTemp = cartProductDetailsObj.productid;
+				var template = '<div class="dspTable wFull crtLst mar30 mbottom">'+
+									'<div class="dspTblCell vaT">'+
+										'<img src="/images/productimages/'+productIdTemp+'.jpg" />'+
+									'</div>'+	
+									'<div class="dspTblCell vaT pad20 pright pleft crtLsname">'+
+										'<strong class="dspBlock">'+cartProductDetailsObj.name + " " + (productId.indexOf("deal") > -1 ? "<img src='/images/deal_icon.png' alt='Deal Item' class='dealIcn'>" : "" )+'</strong>'+
+										'<small class="dspBlock tgrey f11 mar5 mtop">'+cartProductDetailsObj.quantity+' </small>'+
+										'<p class="mar20 mtop qtyEdit">'+
+											'<strong class="dsplNBlock vam mar20 mright">Quantity</strong>'+
+											'<a href="#" class="dsplNBlock vam hasbrdr tblack f13 '+(productId.indexOf("deal") > -1 ? "dealsDeleteToCartIconCls" : "addToCardIconCls" )+'" style="padding: 6px 13px;" data-productId="'+productIdTemp+'" data-quantity="-1" data-dealsId="'+cartProductDetailsObj.dealid+'">-</a>'+
+											'<span class="dsplNBlock vam mar20 mright mleft">'+cartProductDetailsObj.purchasequantity+'</span>'+
+											'<a href="#" class="dsplNBlock vam hasbrdr tblack f13 '+(productId.indexOf("deal") > -1 ? "dealAddToCart" : "addToCardIconCls" )+'" style="padding: 6px 13px;" data-productId="'+productIdTemp+'" data-quantity="1" data-dealsId="'+cartProductDetailsObj.dealid+'">+</a>'+
+										'</p>'+
+									'</div>'+
+									'<div class="dspTblCell vaT pad30 pleft crtLsamt">'+
+										'<p>'+
+											'<strong class="dsplNBlock mar10 mright vam">&#8377; '+formattedAmountValue(cartProductDetailsObj.netpricewithtax)+'</strong>'+
+											'<a href="#" class="ico_delete '+(productId.indexOf("deal") > -1 ? "dealDeleteToCart" : "addToCardBtnCls" )+'" data-productId="'+productIdTemp+'" data-quantity="-'+cartProductDetailsObj.purchasequantity+'" data-dealsId="'+cartProductDetailsObj.dealid+'"></a>'+
+										'</p>'+
+									'</div>'+
+								'</div>';
+				$("#addedCartItemsList").append(template);
+				itemCount = itemCount + parseInt(cartProductDetailsObj.purchasequantity);
+
+				webengage.track("Cart Updated", {
+				          	"Product ID" : productidCode,
+							"Retail Price" : retailPrice,
+							"Discount" : discount,
+		 					"Price" : price,
+							"Quantity"   : purchasequantity,
+
+
+							"Product"    : productName,
+							"Category"   : categoryName,
+							"Currency"   : "INR",
+							"Big Image URL"	: imageUrl,
+
+							"Total Pirce"	 :  totalPrice,
+							"No.of Products" :  itemCount
+
+				});
+
+				if(isValidData(cartProductDetailsObj.dealid))
+					return true;
+				else
+					delete cartProductListObj[productIdTemp];
+				
+				var intervalref = setInterval(function(){
+					if($("#newArrivalProductList, #productCategoryList").length > 0) {
+						showProductQuantityAdjustIcons(productIdTemp, cartProductDetailsObj.purchasequantity);
+						clearInterval(intervalref);
+					}
+				}, 100);
+				
+				delete cartProductListObj[productIdTemp];
+			});
+			
+			$("#totalPayableAmount").html(formattedAmountValue(response.data.discountedpricetodisplay));
+			$("#cartItemCount").html(itemCount);
+			setCookie("cartId",cartId,30);
+			
+			if(itemCount > 0) {
+				showNonEmptyCartContainer();
+			} else {
+				showEmptyCartContainer();
+			}
+			revertCartIconQuantityChanges(cartProductListObj);
+		} else {
+			showToast("Error in creating cart.", "failure");
+			//alert("Error in creating cart.");
+		}
+	} else {
+		//alert(response.message);
+		// showToast("Item not get added to cart.", "failure");
+	}
+	
+	hideLoader();
+}
+
+function showNonEmptyCartContainer() {
+	$("#nonEmptyCart").addClass("show").removeClass("noshow");
+	$("#emptyCart").addClass("noshow").removeClass("show");
+}
+
+function showEmptyCartContainer() {
+	$("#nonEmptyCart").addClass("noshow").removeClass("show");
+	$("#emptyCart").addClass("show").removeClass("noshow");
+}
+
+function getBooleanValue(value) {
+	var num = +value;
+    return !isNaN(num) ? !!num : !!String(value).toLowerCase().replace(!!0,'');
+}
+
+function getAreaId() {
+	return isValidData(getCookie("areaId")) ? getCookie("areaId") : null;
+}
+
+function getCityId() {
+	return isValidData(getCookie("cityId")) ? getCookie("cityId") : null;
+}
+
+function getWarehouseId() {
+	return isValidData(getCookie("warehouseId")) ? getCookie("warehouseId") : null;
+}
+
+function fetchCart(populateHeaderCart) {
+	var cartId = isValidData(getCookie("cartId")) ? getCookie("cartId") : "";
+	if (isValidData(cartId)) {
+		var fetchCartDataRequestParam = {
+			"areaid" : getAreaId(),
+			"cityid" : getCityId(),
+			"cartid" : cartId
+		};
+
+		ajaxCall(webAPIUrl + "/cart/fetch", "POST", fetchCartDataRequestParam, populateHeaderCart, "", "", "");
+	} else {
+		$("#cartItemCount").html("0");
+		showNonEmptyCartContainer();
+	}
+}
+
+function fetchAreaList(that) {
+	var cityId = $(that).data("cityid");
+	var cityName = $(that).data("cityname");
+	$(".locationBtn").removeClass("selected");
+	$(that).addClass("selected");
+	if (isValidData(cityId)) {
+		cityId = cityId + "";
+		setCookie("cityId", cityId, 5);
+		setCookie("cityName", cityName, 5);
+		var data = {
+			"cityid" : cityId
+		};
+
+		ajaxCall(webAPIUrl + "/location/area", "POST", data, areaListSuccessCallBack, '', '', '');
+	}
+}
+
+function areaListSuccessCallBack(response) {
+	if (response.success) {
+		$("#areaListParent").children().remove();
+		currentAreaList = response.data;
+		$.each(currentAreaList, function(areaListIndex, areaDetailArray) {
+			appendAreaToList(areaDetailArray);
+		});
+		$("#citySrchRslt").removeClass("noshow").addClass("show");
+		$("#areaListContainer").removeClass("noshow").addClass("show");
+	} else {
+		showToast(response.message,"failure");
+	}
+	hideLoader();
+}
+
+function checkLocationCookie() {
+	if (!isLocationCookieValid()){
+		var pathArray = window.location.pathname;
+		if (pathArray.includes('--')) {
+			setCookie("cityId", 2, 5);
+			setCookie("areaId", 655, 5);
+			setCookie("cityName", "Gurgaon", 5);
+			setCookie("areaName", "Ardee City", 5);
+			$("#selectedLocationText").html(getCookie("cityName") + ", " + getCookie("areaName"));
+			$("#locationPopUp").hide();
+			refreshPage();
+		} else if (pathArray.includes('delhi')) {
+			setCookie("cityId", 1, 5);
+			setCookie("areaId", 28, 5);
+			setCookie("cityName", "Delhi", 5);
+			setCookie("areaName", "Aerocity", 5);
+			$("#selectedLocationText").html(getCookie("cityName") + ", " + getCookie("areaName"));
+			$("#locationPopUp").hide();
+			refreshPage();
+		} else if (pathArray.includes('gurgaon')) {
+			setCookie("cityId", 2, 5);
+			setCookie("areaId", 655, 5);
+			setCookie("cityName", "Gurgaon", 5);
+			setCookie("areaName", "Ardee City", 5);
+			$("#selectedLocationText").html(getCookie("cityName") + ", " + getCookie("areaName"));
+			$("#locationPopUp").hide();
+			refreshPage();
+		} else if (pathArray.includes('noida')) {
+			setCookie("cityId", 3, 5);
+			setCookie("areaId", 691, 5);
+			setCookie("cityName", "Noida", 5);
+			setCookie("areaName", "Noida Sec 1", 5);
+			$("#selectedLocationText").html(getCookie("cityName") + ", " + getCookie("areaName"));
+			$("#locationPopUp").hide();
+			refreshPage();
+		} else if (pathArray.includes('ghaziabad')) {
+			setCookie("cityId", 4, 5);
+			setCookie("areaId", 959, 5);
+			setCookie("cityName", "Ghaziabad", 5);
+			setCookie("areaName", "VASHUNDRA", 5);
+			$("#selectedLocationText").html(getCookie("cityName") + ", " + getCookie("areaName"));
+			$("#locationPopUp").hide();
+			refreshPage();
+		} else {
+			showLocationModal();
+		}
+	} else {
+		var intervalref = setInterval(function(){ 
+			$("#selectedLocationText").html(getCookie("cityName") + ", " + getCookie("areaName"));
+		}, 100);
+	}
+}
+
+function isLocationCookieValid() {
+	return (isValidData(getCityId()) && isValidData(getAreaId()));
+}
+
+function showLocationModal() {
+	var intervalref = setInterval(function(){ 
+		if($("#locationPopUp").length > 0) {
+			$("#locationPopUp").removeClass("noshow").addClass("show");
+			$("#modal-overlay-id").addClass("show").removeClass("noshow");
+			clearInterval(intervalref);
+		}
+	}, 100);
+}
+
+function populateSearchAreaList(that) {
+	var areaName = $(that).val();
+	if ($(that).val().length>3) {
+		$("#areaListParent").children().remove();
+		if(isValidData(areaName)) {
+			$.each(currentAreaList, function(areaListIndex, areaDetailArray) {
+				if(areaDetailArray[1].toLowerCase().indexOf(areaName.toLowerCase()) > -1)
+					appendAreaToList(areaDetailArray);
+			});
+		} else {
+			$.each(currentAreaList, function(areaListIndex, areaDetailArray) {
+				appendAreaToList(areaDetailArray);
+			});
+		}
+	} else {
+		$("#areaListParent").children().remove();
+		$.each(currentAreaList, function(areaListIndex, areaDetailArray) {
+			appendAreaToList(areaDetailArray);
+		});
+	}
+}
+
+function appendAreaToList(areaDetailArray) {
+	$("#areaListParent").append("<li><a href='#' data-areaid='"+areaDetailArray[0]+"' data-areaname='"+ areaDetailArray[1] + "' data-warehouseid='" + areaDetailArray[2] + "' class='areaHref'>" + areaDetailArray[1] + "</a></li>");
+}
+
+function setAreaCookieAndUpdatePage(that) {
+	var areaId = $(that).data("areaid");
+	var areaName = $(that).data("areaname");
+	var warehouseId = $(that).data("warehouseid");
+
+	setCookie("areaId", areaId, 5);
+	setCookie("areaName", areaName, 5);
+	setCookie("warehouseId", warehouseId, 5);
+
+	$("#locationCntnr").trigger("click");
+	deleteCookie("cartId");
+	fetchCart(populateHeaderCart);
+	showEmptyCartContainer();
+	removeLocationMandatoryError();
+	if (typeof fetchProductdetail === "function") {
+		fetchProductdetail();	
+	}
+	if (typeof fetchProductCategoryList === "function") {
+		fetchProductCategoryList();	
+	}
+	if (typeof fetchDeals === "function") {
+		fetchDeals();	
+	}
+	if(typeof fetchRecommendation != "undefined") {
+		fetchRecommendation();
+	}
+	$("#selectedLocationText").html(getCookie("cityName") + ", " + areaName);
+	webengage.track("City Selected", {
+		    "City"	: getCookie("cityName"),
+			"Area"	: areaName
+		});
+	hideLoader();
+}
+
+function checkOutBtnClickHandler() {
+	var cartItemsCount = $("#addedCartItemsList").children().length;
+	if(cartItemsCount > 0) {
+		window.location.href = "//" + window.location.hostname + "/checkout.html";
+	} else {
+		showToast("Checkout is not possible for the empty cart.", "failure");
+		return false;
+	}
+	
+}
+
+function fetchProductList(that) {
+	var cityId = getCityId();
+	var areaId = getAreaId();
+	var searchtext = $("#productListTextBox").val();
+
+	if (!(isValidData(cityId) && isValidData(areaId) )) {
+		showLocationModal();
+	} else {
+		var fetchProductData = {
+			"cityid" : cityId,
+			"areaid" : areaId,
+			"searchtext" : searchtext
+		};
+
+		ajaxCall(webAPIUrl + "/productsearch/fetch", "POST", fetchProductData, productListSuccessCallBack, '', '', '');
+	}
+}
+
+function productListSuccessCallBack(response) {
+	if (response.success) {
+		var searchtext = $("#productListTextBox").val();
+		var productItemsList = response.data.productdata.products;
+		webengage.track("Product Searched", {
+		    "Search Keyword"	: searchtext,
+			// "Category"			:
+			// "Sub Category"		:
+			// "Sorted By"			:
+		});
+		
+
+		if(isValidData(searchtext)
+		&&isValidData(response.data.productdata.products)) {
+			if ($("#productListTextBox").val().length>3) {		
+				$("#productListParent").children().remove();
+				$.each(productItemsList, function(productListIndex, productListObj) {
+					var currentCategory = categoryId[productListObj.catagory];
+					if(productListObj.name.toLowerCase().indexOf(searchtext.toLowerCase()) > -1)
+						var template =	'<li>'+
+									'<a href="'+getProductDetailPageLink(currentCategory, productListObj.name, productListObj.productid)+'">' +productListObj.name+ '</a>'+
+								'</li>';
+					$("#productListParent").append(template);	
+				});
+			} else {
+				return false;
+			} 	
+		} else {
+			showToast("Not found the product entered", "failure");
+			populateProductCatagoryList();	
+		}
+	}
+}
+
+function getProductDetailPageLink(currentCategory, productName, productId) {
+	var noSpecialChars = productName.replace(/[^a-zA-Z0-9]/g, " "); //removing special chars
+	var noDoubleSpaces = noSpecialChars.replace(/\s+/g,' '); //removing double spaces
+	var appendDelimiter = noDoubleSpaces.trim().replace(/ /g, "-"); //appending -
+	return window.location.origin+"/"+currentCategory+"/" + appendDelimiter + "--" + productId;
+}
+
+function populateProductCatagoryList() {
+	$("#productListParent").children().remove();
+	for(i = 0; i < categoryArray.length; i++) {
+		var template = '<li>'+
+					'<a href="'+categoryArray[i].cathref+'">' + categoryArray[i].catname + '</a>'+
+				'</li>';
+		$("#productListParent").append(template);
+	}
+}
+
+// for sending mail 
+function forgetPassword(that) {
+	var useremail = $("#forgotEmailId").val();
+	if (!checkEmail(useremail)) {
+		$("#signInEmailErrorF").html("Please enter valid email id.").addClass("show").removeClass("noshow");
+		return false;
+	} else {
+		forgetPasswordData = {
+			"forgotpasswordemailid" : useremail
+		};
+		showLoader();
+		ajaxCall(webAPIUrl + "/user/sendforgotpasswordmail", "POST", forgetPasswordData, forgetPasswordSuccessCallBack, '', '', '');
+		$("#signInEmailErrorF").html("").addClass("noshow").removeClass("show");
+	}
+}
+
+function forgetPasswordSuccessCallBack(response) {
+	if (response.success) {
+		var useremail = $("#forgotEmailId").val();
+		$("#recoverPasswordModalContr").removeClass("noshow").addClass("show");
+		$("#forgotPasswordModalContr").removeClass("show").addClass("noshow");
+		$("#otpSentToMailId").html("We have mailed OTP to set a new password for your account to " +useremail+ "." )
+		// showToast(response.message, "success");
+	} else {
+		$("#responseForgetPassMsgError").html("We encounter an issue while sending you OTP email.").addClass("show").removeClass("noshow");
+	}
+	hideLoader();
+}
+
+// for forget/reset password
+function changePassword(that) {
+	var useremail = $("#forgotEmailId").val();
+	var newPassword = $("#enterNewPassword").val();
+	var otp = $("#changePasswordOtp").val();
+	var confirmNewPassword = $("#confirmNewPassword").val();
+	if (newPassword != confirmNewPassword) {
+		$("#newPasswordError").html("newPassword and confirm NewPassword should be same").addClass("show").removeClass("noshow");
+	} else {
+		changePasswordRequestParam = {
+			"otp" : otp,
+			"email" : useremail,
+			"newpassword" : newPassword
+		};
+		showLoader();
+		ajaxCall(webAPIUrl + "/user/changepassword", "POST", changePasswordRequestParam, changePasswordSuccessCallBack, '', '', '');
+	}
+}
+
+function changePasswordSuccessCallBack(response) {
+	if (response.success) {
+		$("#recoverPasswordModalContr").removeClass("show").addClass("noshow");
+		$("#signInModalContr").removeClass("noshow").addClass("show");
+		showToast(response.message, "success");
+	} else {
+	$("#responseRecoverPassMsgError").html("Please enter a valid OTP").addClass("show").removeClass("noshow");
+		// showToast(response.message, "failure");
+	}
+	hideLoader();
+}
+
+function getParsedUserData() {
+	return JSON.parse(getCookie("userData"));
+}
+
+function formattedAmountValue(amount) {
+	return parseFloat(amount).toFixed(2);
+}
+
+function redirectToHomePage() {
+	window.location.href = "//" + window.location.hostname;
+}
+
+function getPercentOffValue(productDetailObj) {
+	var comparePrice = parseFloat(productDetailObj.compareprice);
+	var productPrice = parseFloat(productDetailObj.price);
+	var percentOffValue = ((productPrice - comparePrice) / productPrice) * 100;
+	return formattedNumericValue(percentOffValue, 0);
+}
+
+function formattedNumericValue(numericValue, decimalValue) {
+	return parseFloat(numericValue).toFixed(formattedNumericValue);
+}
+
+function initializeFootercatagory() {
+	var intervalref = setInterval(function(){ 
+		if($("#catagoryFooterList").length > 0) {
+			for(i = 0; i < categoryArray.length; i++) {
+				$("#catagoryFooterList").append('<li class="tgrey mar10 mbottom"><a href="'+categoryArray[i].cathref+'" class="tgrey">'+categoryArray[i].catname+'</a></li>');
+			}
+			clearInterval(intervalref);
+		}
+	}, 100);
+}
+
+
+function showToast(message, messageType) {
+	$("#tst_msg").html(message).removeClass("success failure").addClass(messageType).fadeIn(2000, function(){
+		setTimeout(function() {
+			$("#tst_msg").fadeOut(2000);
+		}, 5000);
+	});
+}
+
+function getParsedAddressString(addressTagDetails) {
+	return addressTagDetails.name 
+	+ "("+addressTagDetails.addresscellnumber+"), " 
+	+ addressTagDetails.firstline + ", " 
+	+ addressTagDetails.secondline + ", " 
+	+ addressTagDetails.landmark + ", " 
+	+ addressTagDetails.city;
+}
+
+function onSignIn(googleUser) {
+	var user = getCookie("userData");
+	var userjsn = "";
+	var usertoken = "";
+
+	if (user == "") {
+		usertoken = "";
+	} else {
+		userjsn = JSON.parse(user);
+		usertoken = userjsn.data.webtoken.token;
+	}
+	if (usertoken != "") {
+		//removespn();
+		return false;
+	}
+
+	// Useful data for your client-side scripts:
+	var profile = googleUser.getBasicProfile();
+
+	// The ID token you need to pass to your backend:
+	var id_token = googleUser.getAuthResponse().id_token;
+	//upper part was from gooogle standard doc. Lower part will be mine. Take the id_token param to server
+	
+	var data = { "gtoken" : id_token };
+	ajaxCall(webAPIUrl + "/user/gsignin", "POST", data, loginSuccessCallback, loginErrorCallback, " ", " ");
+}; // google sign in function
+
+function showLoader() {
+	$(".lds-roller").removeClass("noshow");
+	$("#modal-overlay-loader-id").addClass("show").removeClass("noshow");
+}
+
+function hideLoader() {
+	$(".lds-roller").addClass("noshow");
+	$("#modal-overlay-loader-id").addClass("noshow").removeClass("show");
+}

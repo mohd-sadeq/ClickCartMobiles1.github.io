@@ -1,0 +1,153 @@
+.mobcatSelect {display: none; }
+.modalpopup .modalbody.crtpopWrap{transition: 0.3s all;}
+@media screen and (max-width: 768px) {
+	.hdrWrpr {position: inherit;}
+	.main_ctnr{padding: 0px;}
+	.list{display: block;}
+	.pCard{margin-bottom: 20px;}
+	.smCwrap{width: calc(100% - 30px); margin: 0 15px;}
+	.smwFull{width: 100% !important;}
+	.smbxsz{box-sizing: border-box;}
+	.smnoshow{display: none;}
+	.smnoshow_i{display: none !important;}
+	.stc_cntn{padding: 20px 25px;text-align: justify;}
+	.stc_cntn h3{text-align: left;}
+	.smf15{font-size: 15px !important;}.smf14{font-size: 14px !important;}
+	h2{font-size: 18px;}
+	h3 {font-size: 16px; }
+	.smtcenter{text-align: center !important;}
+	.smtleft {text-align: left  !important;}
+	.splt div.col_2 {padding-left: 0px;}
+	.info_hdrWrpr .infohdr h4{font-size: 26px;}
+	.mobcatSelect{position: relative;width: 100%;display: block;}
+	.mobcatSelect .trigSelect{display: block; border: 1px solid #f0f0f0;font-size: 16px; padding: 14px; border-radius: 4px; background: #fff url(https://static.zappfresh.com/images/select-arrow.png) center right 10px no-repeat;}
+	.mobcatSelect .catSelList{display: none; position: absolute;width: calc(100% - 30px);  border: 1px solid #f0f0f0; padding: 14px 0; border-radius: 4px; z-index: 2;background-color: rgba(255,255,255,0.9);}
+	.mobcatSelect .catSelList.active{display: block;}
+	.mobcatSelect .catSelList ul{list-style-type: none;}
+	.mobcatSelect .catSelList ul li{padding: 10px;}
+	.faqtbWrp .tabtstwrp{display: none;}
+	.faqtbWrp .tab_container{display: block; width: 100%; min-height: auto; margin: 0; box-sizing: border-box; padding: 0 15px; border: 1px solid #f0f0f0;} 
+	.faqtbWrp .tab_container .accordion>li:after{right: -8px;top:15px;}
+	.faqtbWrp .tab_container .accordion>li>a{font-size: 15px;padding: 20px 10px 10px 0;}
+	.faqtbWrp .contct{display: block !important;width: 100%;margin-top: 30px;}
+	#dealsList .pCard{display: inline-block;padding: 12px; width: calc(50% - 12px); margin: 6px 5px; box-sizing: border-box;}
+	#dealsList .pCard a img{width: 100%;height: auto;}
+	#dealsList .pCard .prc button{width: 100%;height: auto;font-size: 10px;}
+	.header{padding: 15px;}
+	.header .menu{display: flex;padding: 0; float: none;}
+	.header .menu a{flex: 1;padding: 0;font-size: 13px;text-align: center;}
+	.header .menu a i{margin-right: 4px}
+	.srchBar p{overflow: hidden;position: relative;}
+	.srchBar p input{min-width: 100%; box-sizing: border-box; padding-right: 45px;}
+	.srchBar p span{    position: absolute; right: 0px; top: 0px;}
+	.nav{display: flex; flex-wrap: nowrap;overflow-x: auto;background: #f1f1f1;    box-shadow: 0 3px 9px -4px rgba(40,44,63,.25);}
+	.nav li{width: auto;white-space: nowrap;}
+	.nav li a{padding: 15px;}
+	.topContent{margin-top: 0px !important;}
+	.slick-prev, .slick-next{height: 35px !important;width: 35px !important;}
+	.slider .slick-arrow{top: 50%;	}
+	.slick-prev:before {content: url(../images/left-arrow.svg) 10px 1px no-repeat; font-size: 0px !important; height: 21px; background-size: 11px; width: 21px; display: inline-block;} 
+	.slick-next:before {content: url(../images/right-arrow.svg) 12px -22px no-repeat; font-size: 0px !important; height: 21px; background-size: 11px; width: 21px; display: inline-block;} 
+	.nwArvl .slick-slide{width: 250px;margin-right: 10px;}
+	.nwArvl .pCard{margin: 0px !important;padding: 10px;box-sizing: border-box;}
+	.nwArvl .pCard a img{width: auto !important;}
+	.ourProd, .ourProd:last-child{margin: 6px;}
+	.tstCntnt{width: 100% !important; padding: 40px 60px; margin: 0px; text-align: center;} 
+	.modalpopup .modalbody.authformWrap{max-width: calc(100vw - 30px); top: 15px; left: 15px; transform: translate(0%, 0%); width: 100%; height: calc(100vh - 30px);} 
+	.authformWrap #signInModalContr, .authformWrap #forgotPasswordModalContr, .authformWrap #recoverPasswordModalContr, .authformWrap #signUpModalContr{padding: 15px !important;}
+	.authformWrap .btn{margin: auto;}
+	.modalpopup .modalbody.crtpopWrap{max-width: calc(100vw - 100px); top: 15px; left: 50px; transform: translate(0%, 0%); width: 100%; height: calc(100vh - 30px);} 
+	.modalbody.crtpopWrap .cls{right: 10px;top: 6px;}
+	.modalbody.crtpopWrap .crtdescWrp{width: 100% !important; font-size: 13px; box-sizing: border-box;padding:40px 10px 20px !important;}
+	.crtLst img{width: 50px;} 
+	.crtLst .crtLsname{padding: 0 5px !important;} 
+	.crtLst .crtLsamt{width: 65px;    padding-left: 0px !important; text-align: right;}
+	.crtLst .qtyEdit strong{margin-right: 10px !important;}
+	.crtLst .qtyEdit a{padding: 0px 6px !important;}
+	.crtLst .qtyEdit span{margin: 0 12px !important;}
+	#dateList p{text-align: center;}
+	#dateList p button{display: inline-block;margin: 5px !important;}
+	#dateList p button:first-child{margin:0 0 0 5px;}
+	.crdtWrp.selectwrp{margin:20px 0;margin-left: 0px !important;}
+	.profl .tab_container{width: 100%;padding: 0;margin-left: 0px;min-height: auto;}
+	.profl .tab_container h2{font-size: 15px;}
+	.profl.faqtabPg .tabtstwrp{display: block;border:0px; width: 100%; box-sizing: border-box; padding: 0px !important;}
+	.profl .csprodTabs{display: flex;margin-bottom: 30px;}
+	.profl .csprodTabs li{flex: 1;text-align: center;}
+	.profl .csprodTabs li a{padding: 10px 0; font-size: 15px; text-transform: uppercase;}
+	.profl .csprodTabs li a.active{box-shadow: 0px 3px #F05A22;}
+	#pastOrdersContr {width: calc(100vw - 30px); overflow: auto;}
+	#pastOrdersContr .historyLst{min-width: 500px;}
+	.payrp.smbxsz{margin-right: 0px !important;}
+	.prdImgWrpr{width: auto; max-width: 500px; margin-right: 0px;display: block;margin: auto;}
+	.prdImgWrpr img{width: 100%;height: auto;}
+	.recipe p{width: calc(25% - 14px); margin: 6px 7px; display: inline-block;vertical-align: top;}
+	.recipe p:nth-child(3), .recipe p:nth-child(6){margin: 6px 7px;}
+	.recipe p span{width: 100%;background-size: cover; background-position: center center; min-height: 70px;}
+	.loginMainState {width: auto !important;}
+	.prodDtl {margin-top: 0 !important;}
+	.prdImgWrpr {margin-bottom: 20px;}
+	.quantityCotnr {float: none;}
+	.ctgrCntnr {float: right; margin-top: -22px;}
+	.ctgrCntnr a {float: none !important; display: inline-block; vertical-align: middle; margin-top:0px !important;}
+	.quantityCotnr a {width: auto !important; float: none;}
+	.recipe {padding: 0;}
+	.recipe p span font {width: 100%; height: 100%; min-height:inherit;}
+	.recipe p span a {top: 16px; left: 25px;}
+	
+
+
+}
+@media screen and (max-width: 580px) {
+	#locationPopUp .modalbody{width: calc(100% - 60px) !important;}
+	#locationPopUp  .selectwrp p{text-align: center;}
+	#locationPopUp  .selectwrp p button{margin: 5px;}
+	.modalpopup .modalbody.crtpopWrap{max-width: calc(100vw - 30px); top: 15px; left: 15px; transform: translate(0%, 0%); width: 100%; height: calc(100vh - 30px);} 
+	.prCatR.rgt_cntnr{padding-left: 0px !important;}
+	.pCatgry .pCardCat{min-height: auto; padding: 10px; margin: 0 0 20px 0; width: 100%;}
+	.pCatgry .pCard h2{    float: right; width: calc(100% - 110px); font-size: 13px;}
+	.pCatgry .pCard p.info{float: right; width: calc(100% - 110px); min-height: auto; margin-bottom: 10px;}
+	.pCatgry .pCard p em{margin: 0 0 5px 0;}
+	.pCatgry .pCard p i{font-size: 9px;}
+	.pCatgry .pCard a{float: left;width: 100px;margin: 0;margin-top: -15px;}
+	.pCatgry .pCard a img {width: 100%; height: auto; } 
+	.pCatgry p.prc{float: right; width: calc(100% - 110px);}
+	.pCatgry p.prc span{font-size: 12px;}
+	.pCatgry p.prc span strong{font-size: 14px;}
+	.pCatgry p.prc .addToCardBtnCls{font-size: 11px; padding: 7px 6px;}
+	.prdImgWrpr{width: calc(100vw - 70px);}
+	.recipe p{width: calc(33% - 14px);}
+	.blg_cmpnt p {width: 45%; margin: 0 0 15px 15px; min-height: auto;}
+	.blg_cmpnt p:first-child, .blg_cmpnt p:nth-child(3) {margin: 0 0 15px 0;}
+	.blg_cmpnt p img{height: auto;}
+}
+
+@media screen and (max-width: 420px) {
+	.xsmwFull{width: 100% !important;}
+	.xstcenter{text-align: center !important;}
+	#dealsList .pCard{width: 100%; padding: 0; margin: 0px 0 10px 0; display: flex; flex-direction: column;} 
+	#dealsList .pCard h2{font-size: 15px; order: 2; text-align: center; padding: 10px 0; position: relative; top: -45px; margin-bottom: -45px; color: #fff; background: rgba(0, 0, 0, 0.5);} 
+	#dealsList .pCard a{order:1;margin: 0px;}
+	.header .menu a i{margin-right: 0px;}
+	#dealsList .pCard a img{border-radius: 2px 2px 0 0;}
+	#dealsList .pCard .prc{order:3;padding: 15px;}
+	.ourProd{width: calc(50% - 14px); margin: 6px 7px; float: left;}
+	.tstCntnt{padding: 40px 35px;} 
+	.crtLst .btn{padding: 15px 25px;}
+	.svdAdrs a i{display: none;}
+	#dateList button{display: block;margin: 10px 0;width: 100%;}
+	.prdImgWrpr{width: 280px;}
+	.xscrtPgBtn{width: 100%;padding: 15px 0px !important;}
+	.xscrtPgBtn.paymentPlaceOrderBtn {margin-top: 0px !important;margin-left: 0px !important;}
+	.xscrtPgBtn.addMoneyAmountBtn {margin-top: 0px !important;margin-left: 0px !important;}
+	.addressChBtn{float: none !important;}
+	.stpdone h2{float: left;}
+	.stpdone i{float: left;margin-right: 20px;}
+	.pymntLst p label em a{margin: 0 10px 10px 0;}
+	.upSl p{margin: 5px 5px 5px 0 !important;padding: 10px 5px;}
+	#addMoneyContr .priceBtn{margin: 6px}
+	.prdDscrpt .addToCardBtnCls{margin-left: 10px !important;}
+	#addMoneyContr .priceBtn:first-child{margin: 6px}
+	.recipe p{width: calc(50% - 14px); }
+	.searchRslt#citySrchRslt {bottom: 54px; box-shadow: 0 0 44px 0px #dedede;}
+}

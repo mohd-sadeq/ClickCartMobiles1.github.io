@@ -1,0 +1,142 @@
+#navi{
+    position:relative;
+}
+
+
+.carousel .carousel-indicators li {
+    max-width: 20px;
+    height: 20px;
+    border-radius: 50% !important;
+    cursor: pointer;
+    background-color: teal;
+    border: 5px solid white;
+}
+.text-teal{
+    color: #00796b;
+}
+.my-textarea{
+    height: auto;
+    border-radius: 10px;
+}
+.my-textarea:focus{
+    border: 2px solid cornflowerblue;
+}
+.card-img{
+    margin-top: -50px;
+}
+
+/* ------------ Trainer Section Cards ---------- */
+.t_card{
+    box-shadow: 0 0 15px #00796b;
+    border-radius: 10px;
+    transition: all 0.5s;
+}
+.t_card .card-body{
+    box-shadow: 0 0 15px #00796b;
+    border-radius: 10px;
+}
+.t_card:hover{
+    background-color: #00796b;
+    cursor: pointer;
+    transform: perspective(500px) rotateY(20deg);
+}
+.t_card:hover h3 , .t_card:hover p{
+    color: white;
+}
+.t_card:hover .t_icon{
+    color: white;
+}
+
+/* ------------ Service Details Cards ---------- */
+.s_card{
+    transition: all 0.5s;
+}
+.s_card .card-body{
+    box-shadow: 0 0 15px #00796b;
+    border-radius: 10px;
+}
+.s_card:hover{
+    background-color: #00796b;
+    cursor: pointer;
+    transform: perspective(500px) rotateX(20deg);
+    color: white;
+}
+/* ------------ Price Details Cards ---------- */
+.p_card{
+    transition: all 0.5s;
+}
+.p_card .card-body{
+    border-radius: 10px;
+}
+.p_card:hover{
+    cursor: pointer;
+    transform: perspective(500px) rotateY(-20deg);
+}
+
+
+/* ----------- Gallery Section ------------- */
+.gallery-section{
+    background-color:black;
+    color:white;
+}
+
+.gallery-article{
+    border: 2px solid black;
+    width: 300px;
+    background-color:black;
+    float: left;
+    margin: 7px;
+    padding: 7px;
+    text-align: center;
+    border-radius: 10px;
+    transition: all 1s;
+}
+.gallery-article:hover{
+    box-shadow: 0 0 15px black;
+}
+.gallery-zoom{
+    width: 300px;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.gallery-zoom img{
+    width: inherit;
+    height: inherit;
+    border-radius: 10px;
+    transition: all 1s;
+}
+.gallery-zoom:hover img{
+    transform: scale(1.2,1.2);
+    cursor: pointer;
+}
+
+
+/* Footer*/
+
+.footer{
+    background-color:black;
+    color:#eee;
+    width:100%;
+    padding:50px 10px 50px 10px;
+    float: left;
+    padding:02;
+}
+.footer::after{
+    clear:both;
+    display:table;
+    content: "";
+}
+.footer {
+    color:#fff;
+    margin-bottom:0px;
+}
+
+.footer-col { 
+    width:24.90%;
+    
+}
+ul{
+    list-style-type:none;
+
+}

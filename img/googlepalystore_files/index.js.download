@@ -1,0 +1,203 @@
+$(function() {
+	populateExploreCategory();
+	initializeHomepageBanner();
+	checkUserAlreadyLoggedIn(checkUserLoginSuccessCallback, userNotLoggedIn);
+	fetchRecommendation();
+	fetchDeals();
+
+	$("body").on("click", "#viewAllProductsBtn", function(event) {
+		event.preventDefault();
+		window.location.href = "//" + window.location.hostname + "/chicken";
+	});
+
+	$("body").on("click", "#readAllBlogsBtn", function(event) {
+		event.preventDefault();
+		window.open("https://www.zappfresh.com/blog/", "_blank");
+	});
+
+});
+
+function checkUserLoginSuccessCallback(response){
+  if (response.success) {
+    userLoggedAfterOperations();
+  } else {
+    // alert(response.message);
+  }
+}
+
+function fetchRecommendation() {
+	if(!isLocationCookieValid()) {
+		showLocationModal();
+	} else {
+		var cityId = getCityId();
+		var areaId = getAreaId();
+				
+		var recommendationRequestData = {
+			"areaid" : areaId,
+			"cityid" : cityId
+		};
+		showLoader();	
+		ajaxCall(webAPIUrl + "/recommendation/fetch", "POST", recommendationRequestData, recommendationAPISuccessCallback, "", recommendationAPICompleteCallback, "");
+	}
+}
+
+function recommendationAPISuccessCallback(response) {
+	if(response.success) {
+		if(isValidData(response.data) 
+				&& isValidData(response.data.productdata) 
+				&& isValidData(response.data.productdata.products)
+				&& response.data.productdata.products.length > 0) {
+			if ($('#newArrivalProductList').hasClass('slick-initialized')) {
+				$('#newArrivalProductList').slick('destroy');
+			}
+
+			$("#newArrivalProductList").children().remove();
+			var productList = response.data.productdata.products;
+			$.each(productList, function(productListArrayIndex, productDetailObject) {
+				var currentCategory = categoryId[productDetailObject.catagory];
+				var template = '<div class="pCard">'+
+									'<h2>'+productDetailObject.name+'</h2>'+
+									'<p class="info">'+
+										'<em>'+productDetailObject.quantity+'</em>';
+										if(productDetailObject.isnew == 'true') {
+											template += '<img src="/images/new.gif"/>';
+										}
+										if(getBooleanValue(productDetailObject.comparepriceshow)) {
+											template += '<i class="tag green">'+getPercentOffValue(productDetailObject)+'% OFF</i>';
+											}	
+										template += '</p>'+
+									'<a href="'+getProductDetailPageLink(currentCategory, productDetailObject.name, productDetailObject.productid)+'">'+
+										'<img src="/images/productimages/'+productDetailObject.productid+'.jpg" />'+
+									'</a>'+
+									'<p class="prc">';
+										if(getBooleanValue(productDetailObject.comparepriceshow)) {
+											template += '<span>'+
+															'<strong>&#8377;'+formattedAmountValue(productDetailObject.compareprice)+'</strong>'+
+															'<label>&#8377;'+formattedAmountValue(productDetailObject.price)+'</label>'+
+														'</span>'; 
+										} else {
+											template += '<span>'+
+															'<strong>&#8377;'+formattedAmountValue(productDetailObject.price)+'</strong>'+
+														'</span>';
+										}
+										template += '<p class="quantityCotnr noshow quantityUpdateIconContainer'+productDetailObject.productid+'" id="quantityUpdateIconContainer'+productDetailObject.productid+'" data-productId="'+productDetailObject.productid+'">'+
+														'<label>Quantity</label>'+
+														'<a href="#" class="plus addToCardIconCls sub" data-productId="'+productDetailObject.productid+'" data-quantity="-1">-</a>'+
+														'<span id="qty'+productDetailObject.productid+'" class="productQtyAdded qty'+productDetailObject.productid+'">0</span>'+
+														'<a href="#" class="plus addToCardIconCls add" data-productId="'+productDetailObject.productid+'" data-quantity="1">+</a>'+
+													'</p>'+
+
+													'<button class="btnRed fR addToCardBtnCls addToCartCotnr addToCardBtn'+productDetailObject.productid+'" id="addToCardBtn'+productDetailObject.productid+'" data-productId="'+productDetailObject.productid+'" data-quantity="1">Add to Cart</button>'+								
+													'</p>'+
+
+													/* FOR OUT OF STOCK PRODUCTS */
+
+													/*if(getBooleanValue(productDetailObject.instock)) {
+														template += '<button class="btnRed fR addToCardBtnCls addToCartCotnr addToCardBtn'+productDetailObject.productid+'" id="addToCardBtn'+productDetailObject.productid+'" data-productId="'+productDetailObject.productid+'" data-quantity="1">Add to Cart</button>';								
+													} else {
+														template += '<label class="outofstockbtn fR">Out of Stock</label>';
+													}
+									template += '</p>'+	*/	
+
+									/* FOR OUT OF STOCK PRODUCTS */
+
+									'<div class="clear"></div>'+
+								'</div>';	
+				$("#newArrivalProductList").append(template);
+			});
+		} else {
+			//alert("We have not found the product list for your location.");
+		}
+	} else {
+		//alert(response.message);
+	}
+	hideLoader();
+}
+
+function recommendationAPICompleteCallback() {
+	
+	$("#newArrivalProductList").slick({
+		dots : true,
+		infinite : true,
+		variableWidth : true
+	});
+}
+
+function fetchDeals() {
+	if(!isLocationCookieValid()) {
+		showLocationModal();
+	} else {
+		var cityId = getCityId();
+		var areaId = getAreaId();
+		
+		var dealRequestParam = {
+			"areaid": areaId,
+			"cityid": cityId
+		};
+					
+		ajaxCall(webAPIUrl + "/deals/fetch", "POST", dealRequestParam, dealsAPISuccessCallback, "", "", "");
+	}
+}
+
+var dealsTnCObj = {};
+function dealsAPISuccessCallback(response) {
+	if(response.success) {
+		var dealsData = response.data;
+		var dealsProductCount = 1;
+		var dealContainerId = 1;
+		$("#dealsList").children().remove();
+		$.each(dealsData, function(dealArrayIndex, dealObj) {
+			if(dealObj.active) {
+				if(dealsProductCount == 5) {
+					$("#dealsList").append('<div class="clear20"></div>');
+					dealsProductCount = 1;
+					dealContainerId++;
+				}
+				
+				if(dealsProductCount == 1) {
+					$("#dealsList").append('<div class="list" id="dealContainer'+dealContainerId+'"> </div>');
+				}
+				var savings = dealObj.savings;
+				// console.log(savings);
+
+				var dealProducts = dealObj.products;
+				var savings = dealObj.savings;
+				var totalPrice = dealObj.totalProdprice;
+				var percentoffValue = ((savings/totalPrice)*100).toFixed(0);
+				// console.log(percentoffValue);
+				var template = '<div class="pCard pCardDeal">'+
+									'<h2>'+dealObj.data.short_description+'</h2>'+
+									'<p class="info">';
+									if(getBooleanValue(dealObj.dealcomparepriceshow)) {
+											template += '<i class="tag green">'+percentoffValue+' %OFF</i>';
+											}
+									
+									template += '</p>'+
+									'<a href="#" class="location modalPopupLayerParent" data-target="dealsPopUp" data-showoverlay="true" id="dealsCntnr" data-dealsId="'+dealObj.dealid.toLowerCase()+'">'+
+										'<img src="/images/deals/'+dealObj.dealid.toLowerCase()+'.jpg" />'+
+									'</a>'+
+									
+									'<p class="prc">';
+									if(getBooleanValue(dealObj.dealcomparepriceshow)) {
+											template += '<span>'+
+															'<strong>&#8377;'+formattedAmountValue(dealObj.totalcompareprice)+'</strong>'+
+															'<label>&#8377;'+formattedAmountValue(totalPrice)+'</label>'+
+														'</span>'; 
+										} else {
+											template += '<span>'+
+															'<strong >&#8377;'+dealObj.totalcompareprice.toFixed(2)+'</strong>'+
+														'</span>';
+										}
+										template += '<button class="btnRed fR dealAddToCart" data-dealsId="'+dealObj.dealid+'" data-quantity="1">Add to Cart</button>'+
+									'</p>'+
+									'<div class="clear"></div>'+
+								'</div>';
+				$("#dealContainer"+dealContainerId).append(template);
+				dealsProductCount++;
+				dealsTnCObj[dealObj.dealid.toLowerCase()] = dealObj.data.termsandcondition;
+			}
+		});
+	} else {
+		showToast(response.message, "failure");
+	}
+}
